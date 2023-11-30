@@ -153,32 +153,25 @@ def assign_phenotype_genotype(df):
     if (exon6 == 'A or B').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'A'
         Genotype = 'AA'
-        Expected = 'Enter-manually'
     elif (exon6 == 'A or B').all() and (exon7_422 == 'B').all() and (exon7_429 == 'B').all():
         Phenotype = 'B'
         Genotype = 'BB'
-        Expected = 'Enter-manually'
     elif (exon6 == 'A or B').all() and (exon7_422 == '(A or O) and B').all() & (exon7_429 == '(A or O) and B').all():
         Phenotype = 'AB'
         Genotype = 'AB'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'O'
         Genotype = 'OO'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O and (A or B)').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'A'
         Genotype = 'AO'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O and (A or B)').all() and (exon7_422 == '(A or O) and B').all and (exon7_429 == '(A or O) and B').all():
         Phenotype = 'B'
         Genotype = 'BO'
-        Expected = 'Enter-manually'
     else:
         Phenotype = 'Unknown'
         Genotype = 'Unknown'
-        Expected = 'Enter-manually'
-
+    Expected = 'Enter-manually'
     df[('', 'Phenotype')] = Phenotype
     df[('', 'Genotype')] = Genotype
     df[('', 'Expected')] = Expected
@@ -205,8 +198,7 @@ for filename in os.listdir(input_dir):
     # Check if the file is a sample folder (for HSS Perth, these files start with IMM[0-9] with _barcode[0-9])
     # if os.path.isdir(os.path.join(input_dir, filename)) and filename.startswith("IMM") and "barcode" in filename and "POS" not in filename:
     if os.path.isdir(os.path.join(input_dir, filename)):
-        match = re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename)
-        if match:
+        if match := re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename):
             # process the file
             print("Processing file: " + filename)
             # Get the sample name and barcode from the folder name

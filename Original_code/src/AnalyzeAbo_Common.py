@@ -27,19 +27,16 @@ def createOutputFile(outputfileName):
     tempDir, tempFilename = split(outputfileName)
     if not os.path.isdir(tempDir):
         os.makedirs(tempDir)
-    resultsOutput = open(outputfileName, 'w')
-    return resultsOutput
+    return open(outputfileName, 'w')
 
 
 def loadInputRecords(recordFileName):
-    if (".fasta" == recordFileName[-6:] or ".fa" == recordFileName[-3:]):
+    if recordFileName[-6:] == ".fasta" or recordFileName[-3:] == ".fa":
         FileOutputFormat = "fasta"
-    elif (".fastq" == recordFileName[-6:] or ".fq" == recordFileName[-3:]):
+    elif recordFileName[-6:] == ".fastq" or recordFileName[-3:] == ".fq":
         FileOutputFormat = "fastq"
     else:
         FileOutputFormat = "UnknownFormat"
 
     parsedInputReads = SeqIO.parse(recordFileName, FileOutputFormat)
-    alignedSequences = enumerate(parsedInputReads)
-
-    return alignedSequences
+    return enumerate(parsedInputReads)

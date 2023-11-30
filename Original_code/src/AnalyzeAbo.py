@@ -30,7 +30,7 @@ AlleleCutoffAgreementPercent = 95
 
 def findPolymorphismsInReads(referenceFileName, readsFileName, outputDirectoryName):
 
-    print(('Looking for polymorphisms in these reads:' + str(readsFileName)))
+    print(f'Looking for polymorphisms in these reads:{str(readsFileName)}')
     alignSequencesAgainstReference(
         referenceFileName, readsFileName, outputDirectoryName)
     sequenceStats = analyzeReadAlignment(outputDirectoryName)
@@ -72,7 +72,7 @@ def alignSequencesAgainstReference(referenceLocation, alleleFileLocation, output
         sequenceWriter.close()
 
         # Index The Reference
-        cmd = ("bwa index " + newReferenceLocation)
+        cmd = f"bwa index {newReferenceLocation}"
         os.system(cmd)
 
     except Exception:
@@ -83,14 +83,9 @@ def alignSequencesAgainstReference(referenceLocation, alleleFileLocation, output
     try:
         # align | sam->bam | sort
         tempAlignmentName = join(alignmentSubdir, 'alignment')
-        alignmentOutputName = tempAlignmentName + '.bam'
         bwaMemArgs = "-t 4 -x ont2d"
-        cmd = ("bwa mem " +
-               bwaMemArgs + " " +
-               newReferenceLocation + " " +
-               alleleFileLocation +
-               " | samtools view  -Sb - | samtools sort -o "
-               + alignmentOutputName)
+        alignmentOutputName = f'{tempAlignmentName}.bam'
+        cmd = f"bwa mem {bwaMemArgs} {newReferenceLocation} {alleleFileLocation} | samtools view  -Sb - | samtools sort -o {alignmentOutputName}"
         #print ('alignment command:\n' + cmd)
         os.system(cmd)
 
@@ -100,10 +95,10 @@ def alignSequencesAgainstReference(referenceLocation, alleleFileLocation, output
 
     # Part 3 Index Alignment
     try:
-        cmd = ("samtools index " + alignmentOutputName)
+        cmd = f"samtools index {alignmentOutputName}"
         #print ('alignment index command:\n' + cmd)
         os.system(cmd)
-        #print ('index command:\n' + cmd)
+            #print ('index command:\n' + cmd)
     except Exception:
         print('Exception indexing alignment reference. Is bwa installed?')
         raise
@@ -130,8 +125,7 @@ def analyzeReadAlignment(outputDirectory):  # , totalReadCount):
     # Iterate the reference sequence column by column.
     pileupIterator = bamfile.pileup(alignmentRef.id)
 
-    for pileupColumnIndex, pileupColumn in enumerate(pileupIterator):
-
+    for pileupColumn in pileupIterator:
         #referencePosition = pileupColumn.reference_pos
         referenceBase = alignmentRef[pileupColumn.reference_pos].upper()
         #alignedCount = pileupColumn.nsegments
@@ -141,17 +135,15 @@ def analyzeReadAlignment(outputDirectory):  # , totalReadCount):
         currentColumnStats.alignedReadCount = pileupColumn.nsegments
 
         # Iterate the Reads at this position
-        for alignedReadRowIndex, pileupRead in enumerate(pileupColumn.pileups):
-
+        for pileupRead in pileupColumn.pileups:
             queryPosition = pileupRead.query_position
 
             # This piled up read is a deletion.
-            if(pileupRead.is_del == 1):
+            if (pileupRead.is_del == 1):
 
                 currentColumnStats.deleteBase()
 
                 #myBloodGroupStats.processDeletion(bloodGroup, pileupColumnIndex)
-            # This one is an insertion.
             elif(pileupRead.indel > 0):
                 # Inertions can be multiple bases, I think.  I'm only grabbing one base here.
                 # Seems to me that one base is probably enough.
@@ -161,19 +153,19 @@ def analyzeReadAlignment(outputDirectory):  # , totalReadCount):
                 currentColumnStats.insertBases(currentBase)
                 #myBloodGroupStats.processInsertion(bloodGroup, pileupColumnIndex, currentBase)
 
-            elif(queryPosition is not None):
+            elif (queryPosition is not None):
 
                 currentBase = pileupRead.alignment.query_sequence[queryPosition].upper(
                 )
 
                 # I guess I should check for this but I don't really know what this means. Maybe it never happens.
-                if(pileupRead.is_refskip):
-                    print(('This read is a refskip, i dont know what that means:' +
-                          pileupRead.alignment.query_name))
+                if pileupRead.is_refskip:
+                    print(
+                        f'This read is a refskip, i dont know what that means:{pileupRead.alignment.query_name}'
+                    )
                     raise Exception(
-                        'This read is a refskip, i dont know what that means:' + pileupRead.alignment.query_name)
-                # else this means we have a base aligned at this position for this read.
-
+                        f'This read is a refskip, i dont know what that means:{pileupRead.alignment.query_name}'
+                    )
                 else:
                     if(currentBase == referenceBase):
 
@@ -235,7 +227,9 @@ def printBasePolymorphisms(alignmentSummaryFile, referencePosition0Based, curren
                                + ', Reference Base=' + currentSequenceStats.referenceBase + '\n')
 
     alignmentSummaryFile.write(
-        'Aligned Read Count:' + str(currentSequenceStats.alignedReadCount) + '\n')
+        f'Aligned Read Count:{str(currentSequenceStats.alignedReadCount)}'
+        + '\n'
+    )
 
     # Header, blood group is in the columns.
     alignmentSummaryFile.write('Mat\tMis\tIns\tDel\tA\tG\tC\tT\n')
@@ -268,12 +262,7 @@ def findReadPolymorphisms(outputDirectory, sequenceStats):
 
         matchPercent = currentSequenceStats.getMatchPercent()
 
-        if (matchPercent > ReadCutoffAgreementPercent):
-            # The sequences think we match. I don't care about this position.
-            pass
-
-        else:
-
+        if matchPercent <= ReadCutoffAgreementPercent:
             printBasePolymorphisms(
                 alignmentSummaryFile, referencePosition0Based, currentSequenceStats)
 
@@ -290,18 +279,16 @@ def findReadPolymorphisms(outputDirectory, sequenceStats):
                     rightSequence += sequenceStats[referencePosition0Based +
                                                    i].referenceBase
 
-                pass
-
-                alignmentSummaryFile.write(leftSequence + ' ' + currentSequenceStats.referenceBase
-                                           + ' ' + rightSequence + '\n')
+                alignmentSummaryFile.write(
+                    f'{leftSequence} {currentSequenceStats.referenceBase} {rightSequence}'
+                    + '\n'
+                )
 
             except Exception:
                 print(
                     'I had an exception when trying to print the sequence surrounding an interesting ABO polymorphism.')
                 print('I bet the reason is out of bounds, sequence is unknown.')
                 print('I choose to just not respond right now.')
-
-            # alignmentSummaryFile.write('\n')
 
     alignmentSummaryFile.close()
 
@@ -319,7 +306,7 @@ def analyzeChosenPolymorphicPositions(referenceFileName, outputDirectory, sequen
     # Exon 7 starts at genomic nucelotide 375
 
     # Exon 6.
-    if(len(alignmentRef) == 135):
+    if (len(alignmentRef) == 135):
         phenotypeOutputFile.write('Exon 6:\n')
 
         #phenotypeOutputFile.write('Genomic position: 261')
@@ -331,7 +318,6 @@ def analyzeChosenPolymorphicPositions(referenceFileName, outputDirectory, sequen
 
         # TODO: Make up some cutoffs.  If the numbers are close to 50/50, we can guess 2 alleles.
 
-    # Exon 7
     elif(len(alignmentRef) == 691):
         phenotypeOutputFile.write('Exon 7:\n')
 
@@ -349,8 +335,7 @@ def analyzeChosenPolymorphicPositions(referenceFileName, outputDirectory, sequen
         printBasePolymorphisms(phenotypeOutputFile, 428, sequenceStats[428])
 
     else:
-        phenotypeOutputFile.write(
-            'This exon has length:' + str(len(alignmentRef)))
+        phenotypeOutputFile.write(f'This exon has length:{len(alignmentRef)}')
     phenotypeOutputFile.close()
 
     # Exon 7
@@ -386,8 +371,7 @@ def analyzeAlleleAlignment(outputDirectory):  # , totalReadCount):
         #alignedCount = pileupColumn.nsegments
 
         # Iterate the Reads at this position
-        for alignedReadRowIndex, pileupRead in enumerate(pileupColumn.pileups):
-
+        for pileupRead in pileupColumn.pileups:
             # wait, what is the sequene name here?
             queryAlleleName = pileupRead.alignment.query_name
             bloodGroup = getPhenotype(queryAlleleName)
@@ -395,10 +379,9 @@ def analyzeAlleleAlignment(outputDirectory):  # , totalReadCount):
             queryPosition = pileupRead.query_position
 
             # This piled up read is a deletion.
-            if(pileupRead.is_del == 1):
+            if (pileupRead.is_del == 1):
                 myBloodGroupStats.processDeletion(
                     bloodGroup, pileupColumnIndex)
-            # This one is an insertion.
             elif(pileupRead.indel > 0):
                 # Inertions can be multiple bases, I think.  I'm only grabbing one base here.
                 # Seems to me that one base is probably enough.
@@ -407,18 +390,18 @@ def analyzeAlleleAlignment(outputDirectory):  # , totalReadCount):
                 myBloodGroupStats.processInsertion(
                     bloodGroup, pileupColumnIndex, currentBase)
 
-            elif(queryPosition is not None):
+            elif (queryPosition is not None):
 
                 currentBase = pileupRead.alignment.query_sequence[queryPosition].upper(
                 )
 
-                if(pileupRead.is_refskip):
-                    print(('This read is a refskip, i dont know what that means:' +
-                          pileupRead.alignment.query_name))
+                if pileupRead.is_refskip:
+                    print(
+                        f'This read is a refskip, i dont know what that means:{pileupRead.alignment.query_name}'
+                    )
                     raise Exception(
-                        'This read is a refskip, i dont know what that means:' + pileupRead.alignment.query_name)
-                # else this means we have a base aligned at this position for this read.
-
+                        f'This read is a refskip, i dont know what that means:{pileupRead.alignment.query_name}'
+                    )
                 else:
                     if(currentBase == referenceBase):
                         myBloodGroupStats.processMatch(
@@ -430,7 +413,8 @@ def analyzeAlleleAlignment(outputDirectory):  # , totalReadCount):
 
             else:
                 print(
-                    ('I did not get an alignemd position for this allele:' + str(queryAlleleName)))
+                    f'I did not get an alignemd position for this allele:{str(queryAlleleName)}'
+                )
                 raise Exception(
                     'I don\'t know what to do with this aligned abo allele.')
 
@@ -518,12 +502,11 @@ def findInterestingAllelePolymorphisms(outputDirectory, myBloodGroupStats):
 
         # If all blood groups agree 100%, this is not an interesting base.
         # if(aMatchPercent == 100 and bMatchPercent == 100 and oMatchPercent == 100):
-        if(aMatchPercent > AlleleCutoffAgreementPercent
-                and bMatchPercent > AlleleCutoffAgreementPercent
-                and oMatchPercent > AlleleCutoffAgreementPercent):
-            pass
-
-        else:
+        if (
+            aMatchPercent <= AlleleCutoffAgreementPercent
+            or bMatchPercent <= AlleleCutoffAgreementPercent
+            or oMatchPercent <= AlleleCutoffAgreementPercent
+        ):
             alignmentSummaryFile.write('\nPosition (1-based):' + str(referencePosition0Based + 1)
                                        + ', ReferenceBase=' + referenceBase
                                        + '\n')
@@ -563,10 +546,7 @@ def findInterestingAllelePolymorphisms(outputDirectory, myBloodGroupStats):
 def getPhenotype(currentSeqID):
     # The character at [4] is the blood group. This method is not complicated.
 
-    if(currentSeqID.startswith('ABO')):
-        #print('This read starts with ABO.')
-        pass
-    else:
+    if not (currentSeqID.startswith('ABO')):
         print('doesnt start with abo.')
         raise Exception('I want the sequence IDs to start with ABO')
 
@@ -590,23 +570,15 @@ def getPhenotype(currentSeqID):
 
 
 def scaleValues(inputValues):
-    # scale from 0:1
-    scaledData = []
-
     oldMinimum = min(inputValues)
     oldMaximum = max(inputValues)
 
-    # Calculated based on a formula from here:
-    # http://stats.stackexchange.com/questions/25894/changing-the-scale-of-a-variable-to-0-100
-
-    if(oldMaximum == oldMinimum):
+    if (oldMaximum == oldMinimum):
         return inputValues
-    else:
-        for currentValue in inputValues:
-            scaledData.append(((1 - 0)/(oldMaximum - oldMinimum))
-                              * (currentValue - oldMaximum) + 1)
-
-    return scaledData
+    return [
+        ((1 - 0) / (oldMaximum - oldMinimum)) * (currentValue - oldMaximum) + 1
+        for currentValue in inputValues
+    ]
 
 
 """

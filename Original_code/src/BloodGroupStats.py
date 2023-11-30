@@ -31,20 +31,20 @@ class BloodGroupStats:
         self.oStats = []
         self.referenceSequence = referenceSequence
 
-        for index, referenceBase in enumerate(referenceSequence):
+        for referenceBase in referenceSequence:
             self.aStats.append(BloodGroupColumn(referenceBase))
             self.bStats.append(BloodGroupColumn(referenceBase))
             self.oStats.append(BloodGroupColumn(referenceBase))
 
     def getStatsForPhenotype(self, phenotype):
-        if(phenotype == 'A'):
+        if (phenotype == 'A'):
             return self.aStats
         elif(phenotype == 'B'):
             return self.bStats
         elif(phenotype == 'O'):
             return self.oStats
         else:
-            raise Exception('Unknown phenotype:' + str(phenotype))
+            raise Exception(f'Unknown phenotype:{str(phenotype)}')
 
     def getNucleotidePercentage(self, phenotype, nucleotide, position):
         return self.getStatsForPhenotype(phenotype)[position].getNucleotidePercentage(nucleotide)
@@ -102,9 +102,9 @@ class BloodGroupColumn:
         # I will try adding the delete count in here as well. The deletes aren't stored in the nucleotide counts
         #totalNucleotideCount = self.aCount + self.gCount + self.cCount + self.tCount
         totalNucleotideCount = self.aCount + self.gCount + \
-            self.cCount + self.tCount + self.delCount
+                self.cCount + self.tCount + self.delCount
 
-        if(totalNucleotideCount == 0):
+        if (totalNucleotideCount == 0):
             print(
                 'I am returning a value of -1 because apparently all my nuclotide positions are equal to zero.')
             #raise Exception('what is going on here?')
@@ -114,7 +114,7 @@ class BloodGroupColumn:
             # TODO: I'm not sure if these calculations are correct.
             # The way I store Insertions and Deletions is kind of confusing for this data.
 
-            if(nucleotide == 'A'):
+            if (nucleotide == 'A'):
                 return ((100.0 * self.aCount)/totalNucleotideCount)
             elif(nucleotide == 'G'):
                 return ((100.0 * self.gCount)/totalNucleotideCount)
@@ -123,8 +123,7 @@ class BloodGroupColumn:
             elif(nucleotide == 'T'):
                 return ((100.0 * self.tCount)/totalNucleotideCount)
             else:
-                raise Exception(
-                    'I do not know what this nucleotide is:' + str(nucleotide))
+                raise Exception(f'I do not know what this nucleotide is:{str(nucleotide)}')
 
     def getMostCommonBase(self):
         maxPolymorphismTypeCount = max(
@@ -132,13 +131,11 @@ class BloodGroupColumn:
         maxNucleotideTypeCount = max(
             (self.aCount, self.gCount, self.cCount, self.tCount))
 
-        if(maxPolymorphismTypeCount == self.matchCount):
+        if (maxPolymorphismTypeCount == self.matchCount):
             return self.referenceBase
         elif(maxPolymorphismTypeCount == self.delCount):
             return '-'
-        elif(maxPolymorphismTypeCount == self.inCount
-             or
-             maxPolymorphismTypeCount == self.mismatchCount):
+        elif maxPolymorphismTypeCount in [self.inCount, self.mismatchCount]:
 
             if(maxNucleotideTypeCount == self.aCount):
                 return 'A'
@@ -191,7 +188,7 @@ class BloodGroupColumn:
         elif (newBases == 'T'):
             self.tCount += 1
         else:
-            raise Exception('Unknown nucleotide base:' + newBases)
+            raise Exception(f'Unknown nucleotide base:{newBases}')
 
     def matchBase(self, newBases):
         self.matchCount += 1

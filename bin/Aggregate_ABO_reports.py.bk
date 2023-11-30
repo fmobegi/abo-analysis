@@ -162,32 +162,25 @@ def assign_phenotype_genotype(df):
     if (exon6 == 'A or B').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'A'
         Genotype = 'AA'
-        Expected = 'Enter-manually'
     elif (exon6 == 'A or B').all() and (exon7_422 == 'B').all() and (exon7_429 == 'B').all():
         Phenotype = 'B'
         Genotype = 'BB'
-        Expected = 'Enter-manually'
     elif (exon6 == 'A or B').all() and (exon7_422 == '(A or O) and B').all() & (exon7_429 == '(A or O) and B').all():
         Phenotype = 'AB'
         Genotype = 'AB'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'O'
         Genotype = 'OO'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O and (A or B)').all() and (exon7_422 == 'A or O').all() and (exon7_429 == 'A or O').all():
         Phenotype = 'A'
         Genotype = 'AO'
-        Expected = 'Enter-manually'
     elif (exon6 == 'O and (A or B)').all() and (exon7_422 == '(A or O) and B').all and (exon7_429 == '(A or O) and B').all():
         Phenotype = 'B'
         Genotype = 'BO'
-        Expected = 'Enter-manually'
     else:
         Phenotype = 'Unknown'
         Genotype = 'Unknown'
-        Expected = 'Enter-manually'
-
+    Expected = 'Enter-manually'
     df[('', 'Phenotype')] = Phenotype
     df[('', 'Genotype')] = Genotype
     df[('', 'Expected')] = Expected
@@ -212,8 +205,7 @@ columns = pd.MultiIndex.from_arrays([header_cols, header_rows])
 # Loop through all files in the input directory
 for filename in os.listdir(input_dir):
     if os.path.isdir(os.path.join(input_dir, filename)):
-        match = re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename)
-        if match:
+        if match := re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename):
             # process the file
             print("Processing file: " + filename)
             # Get the sample name and barcode from the folder name
@@ -229,7 +221,7 @@ for filename in os.listdir(input_dir):
                     df_exon6 = parse_exon6(exon6_file)
                     df_exon7 = parse_exon7(exon7_file)
 
-                    
+
                     # create two subset dataframes, one for each row of df for exon7
                     df_exon7_pos422 = df_exon7.iloc[[0]].reset_index(drop = True)
                     df_exon7_pos429 = df_exon7.iloc[[1]].reset_index(drop = True)
@@ -239,14 +231,14 @@ for filename in os.listdir(input_dir):
                         'Barcode': [barcode],
                         'Sample': [sample_name]
                         })
-                    
+
                     # concatenate the dataframes side by side
                     merged_df = pd.concat(
                         [sample, df_exon6, df_exon7_pos422, df_exon7_pos429],
                         axis = 1,
                         join = "inner").drop(['Exon', 'Position'],
                         axis = 1)
-                    
+
                     # delete 'barcode' and leave only numbers in Barcode column
                     merged_df['Barcode'] = merged_df['Barcode'].str.replace('barcode', '', case = False)
 

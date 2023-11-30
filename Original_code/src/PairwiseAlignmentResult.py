@@ -55,13 +55,13 @@ class PairwiseAlignmentResult():
         # Likley there is tuning to be done here.  
         # I feel like match_score should be zero but I don't get any alignments when that happens.
         # Maybe the gap penalty should be the same as a mismatch penalty, because errors with repeats are somewhat common.
-         
+
         match_score = 1
         mismatch_score = -1
         gap_open = -10
         gap_extend = -1
-        
-        
+
+
         # I want a local alignment, so it allows sequences of different lengths.  
         # The method to call depends on how i want to treat mismatches and indels.
         # I found some hints in the man pages for biopython's pairwise2 package
@@ -74,13 +74,13 @@ class PairwiseAlignmentResult():
         #d     A dictionary returns the score of any pair of characters.
         #c     A callback function returns scores.
         #The gap penalty parameters are:
-        
+
         #CODE  DESCRIPTION
         #x     No gap penalties.
         #s     Same open and extend gap penalties for both sequences.
         #d     The sequences have different open and extend gap penalties.
         #c     A callback function returns the gap penalties.
-        
+
         # I chose localms.  So i can specify a mismatch score, and gap scores.
         # localms(sequenceA, sequenceB, match, mismatch, open, extend) -> alignments        
         #alignments = pairwise2.alignPairwise.localms(self.sequence1,self.sequence2
@@ -88,72 +88,62 @@ class PairwiseAlignmentResult():
         #    ,mismatch_score
         #    ,gap_open
         #    ,gap_extend)
-        
+
         alignments = pairwise2.align.globalms(self.sequence1,self.sequence2
             ,match_score
             ,mismatch_score
             ,gap_open
             ,gap_extend)
-        
+
         #Let's try a global alignment
-        
+
         topAlignment = alignments[0]
-        
+
         self.sequence1Aligned, self.sequence2Aligned, self.alignmentScore, self.indexBegin, self.indexEnd = topAlignment
-               
+
         # I really don't need to store this information but why not?  Computer doesn't complain.
         self.sequence1AlignedShort = self.sequence1Aligned[self.indexBegin:self.indexEnd]
         self.sequence2AlignedShort = self.sequence2Aligned[self.indexBegin:self.indexEnd]
-        
+
         #Count the number of mismatches etc.
         # An "insertion" is an extra base in sequence 2, not accounted in sequence 1.
         # A "deletion" is a base in sequence 1, missing in sequence 2
         # An indel is both of those.
         self.alignedSectionLength = len(self.sequence1AlignedShort)
-        
 
-        
+
+
         # Possible States = 'match' 'mismatch' 'insertion' 'deletion
         # Start at 0, because python enumerate method starts at 0.
         currentState = 'match'
         beginIndex = 0
-        
+
         # Iterate the bases of the alignment, report regions that are match, mismatch, del, etc.
         for baseIndex, seq1Base in enumerate(self.sequence1AlignedShort):
-            seq2Base = self.sequence2AlignedShort[baseIndex]            
-            if(seq1Base == seq2Base):
-                if(currentState=='match'):
-                    # We're STILL In a match state.  Do nothing.
-                    pass
-                else:
+            seq2Base = self.sequence2AlignedShort[baseIndex]
+            if (seq1Base == seq2Base):
+                if currentState != 'match':
                     self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
                     beginIndex = baseIndex
                     currentState = 'match'
 
-            elif(seq1Base == '-'):
-                if(currentState=='insertion'):
-                    pass
-                else:
+            elif (seq1Base == '-'):
+                if currentState != 'insertion':
                     self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
                     beginIndex = baseIndex
                     currentState = 'insertion'
 
-            elif(seq2Base == '-'):
-                if(currentState=='deletion'):
-                    pass
-                else:
+            elif (seq2Base == '-'):
+                if currentState != 'deletion':
                     self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
                     beginIndex = baseIndex
                     currentState = 'deletion'
-                    
-            else:
-                if(currentState=='mismatch'):
-                    pass
-                else:
-                    self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
-                    beginIndex = baseIndex
-                    currentState = 'mismatch'
-                    
+
+            elif currentState != 'mismatch':
+                self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
+                beginIndex = baseIndex
+                currentState = 'mismatch'
+
         # Guess I need to store the "last" aligned region.
         self.storeAlignmentRegion(currentState, beginIndex, baseIndex-1)
             

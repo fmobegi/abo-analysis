@@ -272,9 +272,9 @@ class ABOReportParser:
     def process_files(self):
         for filename in os.listdir(self.input_dir):
             if os.path.isdir(os.path.join(self.input_dir, filename)):
-                # match = re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename)
-                match = re.match(r"^(IMM|INGS|NGS)(-[0-9]+-[0-9]+)?_barcode\d+", filename)
-                if match:
+                if match := re.match(
+                    r"^(IMM|INGS|NGS)(-[0-9]+-[0-9]+)?_barcode\d+", filename
+                ):
                     print("Processing file: " + filename)
                     # Extract barcode and sample_name from the filename
                     sample_name, barcode = filename.split("_")

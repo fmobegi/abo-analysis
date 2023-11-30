@@ -53,12 +53,10 @@ def readArgs():
     outputDirectoryName = None
     analysisType = None
 
-    if(len(sys.argv) < 3):
+    if (len(sys.argv) < 3):
         print('I don\'t think you have enough arguments.\n')
         usage()
         raise()
-        return False
-
     # getopt.getopt(..) is a function for parsing args the way smart people do it
     # For More info, use google or
     # https://www.tutorialspoint.com/python/python_command_line_arguments.htm
@@ -90,22 +88,13 @@ def readArgs():
                 outputDirectoryName = arg
 
             elif opt in ("e6", "--exon-6"):
-                print('YOU GAVE ME EXON 6:' + arg)
-
-            # elif opt in ("-A", "--alleles-a"):
-            #    allelesAFileName = arg
-
-            # elif opt in ("-B", "--alleles-b"):
-            #    allelesBFileName = arg
-
-            # elif opt in ("-O", "--alleles-o"):
-            #    allelesOFileName = arg
+                print(f'YOU GAVE ME EXON 6:{arg}')
 
             elif opt in ("-t", "--analysis-type"):
                 analysisType = arg
 
             else:
-                print('Unknown commandline option: ' + opt)
+                print(f'Unknown commandline option: {opt}')
                 raise()
 
     except getopt.GetoptError as errorMessage:
@@ -114,28 +103,20 @@ def readArgs():
         usage()
         return False
 
-    print('Reference File:' + str(referenceFileName))
-    print('Reads File:' + str(readsFileName))
-    print('Alleles File:' + str(allelesFileName))
-    print('Output Directory:' + str(outputDirectoryName))
+    print(f'Reference File:{str(referenceFileName)}')
+    print(f'Reads File:{str(readsFileName)}')
+    print(f'Alleles File:{str(allelesFileName)}')
+    print(f'Output Directory:{str(outputDirectoryName)}')
 
     # Quick sanity check.
-    if(len(referenceFileName) < 4):
-        print('referenceFileName is too short:' + str(referenceFileName))
+    if (len(referenceFileName) < 4):
+        print(f'referenceFileName is too short:{str(referenceFileName)}')
         return False
-    # TODO: I don't feel like writing sanity checks rignt now.
-
-    # If we're doing allele analysis we need:
-        # fasta with alleles
-        # exon 6 and7 referencx
-    # If read analysis
-        # need ex 6 and 7.
-
     # if(len(allelesFileName) < 4):
     #    print('allelesFileName is too short:' + str(allelesFileName))
     #    return False
-    if(len(outputDirectoryName) < 4):
-        print('Output directory is too short:' + str(outputDirectoryName))
+    if (len(outputDirectoryName) < 4):
+        print(f'Output directory is too short:{str(outputDirectoryName)}')
         return False
 
     if not os.path.isdir(outputDirectoryName):
