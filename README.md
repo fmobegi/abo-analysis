@@ -9,7 +9,7 @@ See [https://ftp.ncbi.nlm.nih.gov/pub/mhc/rbc/Final%20Archive/Excel_and_PowerPoi
 # Required tools
 
 The pipeline makes use of the following core dependencies:
-
+```yaml
 - bioconda::fastqc=0.12.1
 - bioconda::bwa=0.7.17
 - conda-forge::ncurses
@@ -28,8 +28,33 @@ The pipeline makes use of the following core dependencies:
   - matplotlib>=3.8.0
   - XlsxWriter>=3.2.0
   - multiqc>=1.18
-
+```
 A complete list of dependencies is found in the assets folder `assets/conda.yml`.
+
+# Required input files structure
+Ensure that all input fastq files have a naming convention that matches this regular expression (`regex`)
+```python
+## python regex for matching samples
+pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
+```
+The regex does the following:
+- `^(IMM|INGS|NGS|[A-Z0-9]+)` allows for files strating with the prefixes IMM, INGS, NGS, or any combination of letters `A-to-Z` and digits `0-to-9`.
+- `(-[0-9]+-[0-9]+)?` handles optional segments of digits separated by a dash(-).
+- `_barcode\d+$` ensures the filename ends with_barcode followed by digits to denote barcode numbers.
+
+There is a filename handling logic in the code `filename.split("_")` assumes that the barcode is always the last part of the filename. The names are split into basename and barcode which are then used in later reporting. Please Adjust this if necessary based on actual filename structure in your assays.
+ 
+Here are a few examples of acceptable input file names:
+```txt
+NGSPOS_barcode13.fastq
+NGSNEG_barcode12.fastq
+INGSPOS_barcode01.fastq
+INGSNEG_barcode96.fastq
+IBTGSPOS_barcode19.fastq
+2025705_barcode14.fastq
+IMM-24-44988_barcode51.fastq
+Sample1-2024-12345_barcode22.fastq
+```
 
 # Testing without `nextflow`
 
@@ -53,9 +78,9 @@ python bin/AnalyzeAbo_Main.py  \
 
 Looping through a couple of samples with the above command will generate the following outputs:
 
-Data structure
+## Output data structure from the testing
 
-```bash
+```yaml
 OutputDirectoryName/
 ├── Sample1
 │   ├── exon6
@@ -77,7 +102,7 @@ OutputDirectoryName/
 
 With individual files named as follows:
 
-```bash
+```yaml
 OutputDirectoryName/
 ├── Sample1
 │   ├── exon6
@@ -151,18 +176,14 @@ To run without the workload manager but with a specific containerization, use:
 - `nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -with-docker fmobegi/abo-analysis` or
   `nextflow run abo-analysis/main.nf -resume --outdir "$PWD/230128R_ABO_results" -profile docker`
 
-# Renaming samples (OPTIONAL)
-**NB: This step is on by default. If not needed, users must explicitly disable it in the config file by setting** `--skip_renaming true`
+# Renaming samples
 
 The code by default renames samples using a tab file with `sequencingID` and `sampleName` (see `nextflow.config` file under `$params.renaming_file`).
-In our use case, this file is exported directly from LIS Soft into an excel file whose "Acc#" and "Patient Name" columns (A,C) are used for renaming purposes. 
-The script `rename_samples.py` can be modified according to fit each use case. 
 This option is controlled by the parameter `$params.skip_renaming` and can be overridden via the commandline using option `--skip_renaming true` to skip the process.
-Please feel free to reach our if you need help customising this part for your use-case
 
 # Results from the `Nextflow` pipeline will look something like this
 
-```bash
+```yaml
 230128R_ABO_results/
 ├── ABO_result.txt
 ├── ABO_result.xlsx
