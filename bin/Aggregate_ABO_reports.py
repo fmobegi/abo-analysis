@@ -482,20 +482,20 @@ class ABOReportParser:
             # Reliability = 'Enter-manually'
 
         if (
-            (nreads6 <= 30).all()
-            and (nreads_exon7_p422 <= 30).all()
-            and (nreads_exon7_p428 <= 30).all()
-            and (nreads_exon7_p429 <= 30).all()
-            and (nreads_exon7_p431 <= 30).all()
+            (nreads6 <= 20).all()
+            and (nreads_exon7_p422 <= 20).all()
+            and (nreads_exon7_p428 <= 20).all()
+            and (nreads_exon7_p429 <= 20).all()
+            and (nreads_exon7_p431 <= 20).all()
         ):
-            Reliability = "Very Low(\u226430 reads)"
+            Reliability = "Very Low(\u226420 reads)"
 
         elif (
-            ((nreads6 > 30) & (nreads6 < 50)).all()
-            and ((nreads_exon7_p422 > 30) & (nreads_exon7_p422 < 50)).all()
-            and ((nreads_exon7_p428 > 30) & (nreads_exon7_p428 < 50)).all()
-            and ((nreads_exon7_p429 > 30) & (nreads_exon7_p429 < 50)).all()
-            and ((nreads_exon7_p431 > 30) & (nreads_exon7_p431 < 50)).all()
+            ((nreads6 > 20) & (nreads6 < 50)).all()
+            and ((nreads_exon7_p422 > 20) & (nreads_exon7_p422 < 50)).all()
+            and ((nreads_exon7_p428 > 20) & (nreads_exon7_p428 < 50)).all()
+            and ((nreads_exon7_p429 > 20) & (nreads_exon7_p429 < 50)).all()
+            and ((nreads_exon7_p431 > 20) & (nreads_exon7_p431 < 50)).all()
         ):
             Reliability = "Low (\u226450 reads)"
 
@@ -681,16 +681,16 @@ class ABOReportParser:
         f'A1:{chr(ord("A") + num_cols - 1)}{num_rows}'
 
         try:
-            # Very low number of reads < 30
+            # Very low number of reads < 20
             worksheet.conditional_format(
                 "A1:BD5000",
                 {
                     "type": "formula",
-                    "criteria": '=$BD1="Very Low(\u226430 reads)"',
+                    "criteria": '=$BD1="Very Low(\u226420 reads)"',
                     "format": red_bg_format,
                 },
             )
-            ## Low >30 but < 50
+            ## Low >20 but < 50
             worksheet.conditional_format(
                 "A1:BD5000",
                 {
