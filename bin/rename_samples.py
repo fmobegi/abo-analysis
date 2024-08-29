@@ -3,6 +3,7 @@
 import sys
 import re
 import pandas as pd
+import numpy as np
 from datetime import datetime
 
 
@@ -91,30 +92,49 @@ def create_copy_without_sequencing_acc(final_export_grid):
     return final_export_grid_no_accession
 
 
-# def write_to_file(final_export_grid, final_export_grid_no_accession):
+# def write_to_file(final_export_grid, final_export_grid_no_accession, directory=""):
 #     """
-#     Write to file
+#     Write data-frames to files with current date as suffix.
 #     """
-#     final_export_grid.to_csv(
-#         "MatchPointExport_with_sequencingAcc_"
-#         + datetime.now().strftime("%Y_%m_%d")
-#         + ".txt",
-#         index=False,
-#         encoding="utf-8",
-#         lineterminator="\n",
+#     date_suffix = datetime.now().strftime(DATE_FORMAT)
+#     path_with_accession = (
+#         f"{directory}MatchPointExport_with_sequencingAcc_{date_suffix}.txt"
 #     )
+#     path_without_accession = f"{directory}MatchPointExport_{date_suffix}.txt"
+
+#     try:
+#         final_export_grid.to_csv(
+#             path_with_accession, index=False, encoding="utf-8", lineterminator="\n"
+#         )
+#         final_export_grid_no_accession.to_csv(
+#             path_without_accession, index=False, encoding="utf-8", lineterminator="\n"
+#         )
+#     except Exception as e:
+#         print(f"Error writing files: {e}")
 
 
-#     final_export_grid_no_accession.to_csv(
-#         "MatchPointExport_" + datetime.now().strftime("%Y_%m_%d") + ".txt",
-#         index=False,
-#         encoding="utf-8",
-#         lineterminator="\n",
-#     )
 def write_to_file(final_export_grid, final_export_grid_no_accession, directory=""):
     """
     Write data-frames to files with current date as suffix.
     """
+    # Convert literal 'nan' to np.nan
+    final_export_grid_no_accession.replace("nan", np.nan, inplace=True)
+
+    # Filter final_export_grid_no_accession to include only rows where #Reads >= 20
+    if "#Reads" in final_export_grid_no_accession.columns:
+        final_export_grid_no_accession = final_export_grid_no_accession[
+            final_export_grid_no_accession["#Reads"] >= 20
+        ]
+        final_export_grid_no_accession = final_export_grid_no_accession.drop(
+            columns=["#Reads"]
+        )
+
+    # Drop rows where 'Sample ID' is NaN (including literal 'nan' now converted)
+    final_export_grid_no_accession = final_export_grid_no_accession[
+        final_export_grid_no_accession["Sample ID"].notna()
+    ]
+
+    # Create date suffix for filenames
     date_suffix = datetime.now().strftime(DATE_FORMAT)
     path_with_accession = (
         f"{directory}MatchPointExport_with_sequencingAcc_{date_suffix}.txt"

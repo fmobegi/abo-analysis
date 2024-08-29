@@ -109,7 +109,11 @@ process compile_results{
  
     script:
         """
-        python3 $projectDir/bin/Aggregate_ABO_reports.py $snp_position_files 2>&1 | tee  ABO_results.log
+        python3 $projectDir/bin/Aggregate_ABO_reports.py \\
+            $snp_position_files 2>&1 | tee  ABO_results.log
+
+        grep -E "Skipping|does not|Error" ABO_results.log > failed_samples.txt
+        
         """
 }
 
@@ -125,8 +129,8 @@ process rename_samples {
     
 
     output:
-    path "MatchPointExport.txt"
-    path "MatchPointExport_with_sequencingAcc.txt"
+    path "MatchPointExport*.txt"
+    path "MatchPointExport_with_sequencingAcc*.txt"
 
     script:
     """

@@ -592,7 +592,7 @@ class ABOReportParser:
     #                 sample_name, barcode = filename.split("_")
     #                 self.process_file(filename)
     #                 print(
-    #                     "Done adding Sample %s with barcode %s to merged data frame\n"
+    #                     "Done adding Sample %s with barcode %s to merged data frame"
     #                     % (sample_name, barcode)
     #                 )
 
@@ -602,11 +602,14 @@ class ABOReportParser:
             if os.path.isdir(os.path.join(self.input_dir, filename)):
                 try:
                     # Updated regex pattern
-                    pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
+                    # pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
+                    pattern = (
+                        r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
+                    )
                     match = re.match(pattern, filename)
 
                     if match:
-                        print("Processing file: " + filename)
+                        print("\nProcessing file: " + filename)
 
                         # Extract barcode and sample_name from the filename
                         parts = filename.split("_")
@@ -622,22 +625,22 @@ class ABOReportParser:
                                 )
                                 self.process_file(filename)
                                 print(
-                                    "Done adding Sample %s with barcode %s to merged data frame\n"
+                                    "Done adding Sample %s with barcode %s to merged data frame"
                                     % (sample_name, barcode)
                                 )
                             else:
                                 print(
-                                    f"Barcode format incorrect in filename: {filename}"
+                                    f"\Barcode format incorrect in filename: {filename}"
                                 )
                         else:
                             print(
                                 f"Filename does not have the expected number of parts: {filename}"
                             )
                     else:
-                        print(f"File {filename} does not match expected patterns.")
+                        print(f"\nFile does not match expected patterns: {filename}")
                 except Exception as e:
                     # Handle exceptions
-                    print(f"Error processing file {filename}: {e}")
+                    print(f"\nError processing file {filename}: {e}")
                 finally:
                     # Any cleanup code goes here
                     print(f"Finished processing file: {filename}")
@@ -700,7 +703,9 @@ class ABOReportParser:
                 },
             )
         except Exception as e:
-            print(f"An error occurred while applying conditional formatting: {str(e)}")
+            print(
+                f"\nAn error occurred while applying conditional formatting: {str(e)}"
+            )
 
         for row in range(2, num_rows + 2):  # Add 2 to account for the header row
             for col in range(num_cols):
@@ -735,6 +740,42 @@ class ABOReportParser:
 
         writer.close()
 
+        ## Creating Final Export file
+
+        # self.df_for_lis_soft = pd.DataFrame()
+        # self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
+        # self.df_for_lis_soft["Shipment Date"] = ""
+
+        # # Only process if "Genotype" column exists and all values are not 'Unknown' or blank
+        # if (
+        #     "Genotype" in final_df.columns
+        #     and not final_df["Genotype"].isnull().all()
+        #     and not (final_df["Genotype"] == "Unknown").all()
+        # ):
+        #     valid_genotype_mask = (final_df["Genotype"] != "Unknown") & final_df[
+        #         "Genotype"
+        #     ].notnull()
+        #     self.df_for_lis_soft.loc[valid_genotype_mask, "ABO Geno Type1"] = (
+        #         final_df.loc[valid_genotype_mask, "Genotype"].str[0]
+        #     )
+        #     self.df_for_lis_soft.loc[valid_genotype_mask, "ABO Geno Type2"] = (
+        #         final_df.loc[valid_genotype_mask, "Genotype"].str[1]
+        #     )
+
+        # else:
+        #     self.df_for_lis_soft["ABO Geno Type1"] = ""
+        #     self.df_for_lis_soft["ABO Geno Type2"] = ""
+
+        # self.df_for_lis_soft["ABO Pheno Type"] = final_df["Phenotype"]
+        # self.df_for_lis_soft["RH"] = ""
+        # self.df_for_lis_soft["Blood Type"] = final_df["Phenotype"]
+        # self.df_for_lis_soft["ABORH Comments"] = ""
+        # self.df_for_lis_soft.drop_duplicates(inplace=True)
+        # self.df_for_lis_soft.to_csv("./final_export.csv", index=False, encoding="utf-8")
+
+        ## -------------------- Modified to add Average # of Reads to final export
+
+        # Initialize df_for_lis_soft DataFrame
         self.df_for_lis_soft = pd.DataFrame()
         self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
         self.df_for_lis_soft["Shipment Date"] = ""
@@ -754,7 +795,6 @@ class ABOReportParser:
             self.df_for_lis_soft.loc[valid_genotype_mask, "ABO Geno Type2"] = (
                 final_df.loc[valid_genotype_mask, "Genotype"].str[1]
             )
-
         else:
             self.df_for_lis_soft["ABO Geno Type1"] = ""
             self.df_for_lis_soft["ABO Geno Type2"] = ""
@@ -763,6 +803,18 @@ class ABOReportParser:
         self.df_for_lis_soft["RH"] = ""
         self.df_for_lis_soft["Blood Type"] = final_df["Phenotype"]
         self.df_for_lis_soft["ABORH Comments"] = ""
+
+        # Handle columns based on index type
+        if isinstance(final_df.columns, pd.MultiIndex):
+            # Multi-level index case
+            reads_df = final_df.loc[:, (slice(None), "#Reads")]
+        else:
+            # Single-level index case
+            reads_df = final_df.filter(like="#Reads")
+
+        # Compute the average of the '#Reads' columns
+        self.df_for_lis_soft["#Reads"] = reads_df.mean(axis=1)
+
         self.df_for_lis_soft.drop_duplicates(inplace=True)
         self.df_for_lis_soft.to_csv("./final_export.csv", index=False, encoding="utf-8")
 
