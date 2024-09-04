@@ -346,7 +346,7 @@ workflow {
     
     // Rename order # with grid number if samples deobfuscation file in provided
     if (!params.skip_renaming) {
-        rename_samples(ch_export_file.collect(), params.renaming_file)
+        rename_samples(params.renaming_file, ch_export_file.collect())
     }
 
   	// Publish software versions to text

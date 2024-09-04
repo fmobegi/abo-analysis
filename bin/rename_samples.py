@@ -187,3 +187,7 @@ if __name__ == "__main__":
         print("Usage: python rename_samples.py <final_export_file> <deobfuscation>")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2])
+
+
+print("""Successfully renamed the files!\n""")
+sys.exit(0)
