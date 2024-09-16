@@ -10,25 +10,68 @@ from datetime import datetime
 # Constants
 DATE_FORMAT = "%Y_%m_%d"
 
+# def read_renaming_file(deobfuscation):
+#     """
+#     Read the Excel file from soft PCR HLA exported file
+#     """
+#     return pd.read_excel(deobfuscation, index_col=None, na_values=["NA"], usecols="A,C")
 
+
+## CHanged to use actual column names instead of A,C positions in sheet
 def read_renaming_file(deobfuscation):
     """
-    Read the Excel file from soft PCR HLA exported file
+    Read the Excel file from soft PCR HLA exported file and select specific columns by name.
     """
-    return pd.read_excel(deobfuscation, index_col=None, na_values=["NA"], usecols="A,C")
+    # Specify the column names you want to read
+    column_names = [
+        "Acc#",
+        "Patient Name",
+    ]
+
+    return pd.read_excel(
+        deobfuscation, index_col=None, na_values=["NA"], usecols=column_names
+    )
+
+
+# def preprocess_renaming_file(renaming_file):
+#     """
+#     Preprocess the renaming file by renaming columns, extracting the first value from the comma-separated Grid_number column,
+#     converting Grid_number column to string type, and filtering out rows where Grid_number starts with a letter
+#     """
+#     renaming_file = renaming_file.rename(
+#         columns={"Acc#": "Sample ID", "Patient Name": "Grid_number"}
+#     )
+#     renaming_file["Grid_number"] = renaming_file["Grid_number"].str.split(",").str[0]
+#     renaming_file["Grid_number"] = renaming_file["Grid_number"].astype(str)
+#     return renaming_file[~renaming_file["Grid_number"].str.contains("^[a-zA-Z]")]
 
 
 def preprocess_renaming_file(renaming_file):
     """
-    Preprocess the renaming file by renaming columns, extracting the first value from the comma-separated Grid_number column,
-    converting Grid_number column to string type, and filtering out rows where Grid_number starts with a letter
+    Preprocess the renaming file by renaming columns, extracting the first value from the comma-separated Grid_number column
+    if a comma exists, converting Grid_number column to string type, and filtering out rows where Grid_number starts with a letter.
     """
+    # Rename columns
     renaming_file = renaming_file.rename(
         columns={"Acc#": "Sample ID", "Patient Name": "Grid_number"}
     )
-    renaming_file["Grid_number"] = renaming_file["Grid_number"].str.split(",").str[0]
-    renaming_file["Grid_number"] = renaming_file["Grid_number"].astype(str)
-    return renaming_file[~renaming_file["Grid_number"].str.contains("^[a-zA-Z]")]
+
+    # Check if 'Grid_number' column exists and process it
+    if "Grid_number" in renaming_file.columns:
+        # Split only if a comma is present, otherwise keep the whole value
+        renaming_file["Grid_number"] = renaming_file["Grid_number"].apply(
+            lambda x: x.split(",")[0] if isinstance(x, str) and "," in x else x
+        )
+
+        # Ensure 'Grid_number' is of string type
+        renaming_file["Grid_number"] = renaming_file["Grid_number"].astype(str)
+
+        # Filter out rows where 'Grid_number' starts with a letter
+        renaming_file = renaming_file[
+            ~renaming_file["Grid_number"].str.contains("^[a-zA-Z]", regex=True)
+        ]
+
+    return renaming_file
 
 
 def apply_regex_pattern(df, pattern):

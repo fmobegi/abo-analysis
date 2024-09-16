@@ -1,0 +1,42 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Input Validation -->
+  <rect x="20" y="20" width="150" height="40" fill="#f0f0f0" stroke="#000" />
+  <text x="30" y="45" font-family="Arial" font-size="12">Input Validation</text>
+
+  <!-- FastQC -->
+  <rect x="200" y="20" width="100" height="40" fill="#cce5ff" stroke="#000" />
+  <text x="210" y="45" font-family="Arial" font-size="12">FastQC</text>
+
+  <!-- Exon 6 Mapping -->
+  <rect x="20" y="100" width="150" height="40" fill="#d4edda" stroke="#000" />
+  <text x="30" y="125" font-family="Arial" font-size="12">Exon 6 Mapping</text>
+
+  <!-- Exon 7 Mapping -->
+  <rect x="200" y="100" width="150" height="40" fill="#d4edda" stroke="#000" />
+  <text x="210" y="125" font-family="Arial" font-size="12">Exon 7 Mapping</text>
+
+  <!-- Compile Results -->
+  <rect x="20" y="180" width="150" height="40" fill="#fff3cd" stroke="#000" />
+  <text x="30" y="205" font-family="Arial" font-size="12">Compile Results</text>
+
+  <!-- Sample Renaming -->
+  <rect x="200" y="180" width="150" height="40" fill="#f8d7da" stroke="#000" />
+  <text x="210" y="205" font-family="Arial" font-size="12">Sample Renaming</text>
+
+  <!-- Software Versions -->
+  <rect x="20" y="260" width="150" height="40" fill="#e2e3e5" stroke="#000" />
+  <text x="30" y="285" font-family="Arial" font-size="12">Software Versions</text>
+
+  <!-- MultiQC -->
+  <rect x="200" y="260" width="100" height="40" fill="#cce5ff" stroke="#000" />
+  <text x="210" y="285" font-family="Arial" font-size="12">MultiQC</text>
+
+  <!-- Arrows -->
+  <line x1="170" y1="40" x2="200" y2="40" stroke="#000" />
+  <line x1="120" y1="60" x2="120" y2="100" stroke="#000" />
+  <line x1="250" y1="60" x2="250" y2="100" stroke="#000" />
+  <line x1="170" y1="120" x2="20" y2="200" stroke="#000" />
+  <line x1="250" y1="120" x2="200" y2="200" stroke="#000" />
+  <line x1="170" y1="200" x2="20" y2="280" stroke="#000" />
+  <line x1="250" y1="200" x2="200" y2="280" stroke="#000" />
+</svg>
