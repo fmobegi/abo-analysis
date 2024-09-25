@@ -20,6 +20,10 @@ A script to collate all ABO phenotype results from each sample into an
 Excel worksheet and a CSV for export to LIS soft.
 """
 
+print(
+    "\033[92m\n ********* Started combining samples to single file ********* \033[0m\n"
+)
+
 
 class ABOReportParser:
     def __init__(self, input_dir):
@@ -527,13 +531,23 @@ class ABOReportParser:
             print(f"Skipping file {filename}. Missing exon6 or exon7 directory.")
             return
 
-        exon6_file = os.path.join(exon6_dir, "ABOPhenotype.txt")
-        exon7_file = os.path.join(exon7_dir, "ABOPhenotype.txt")
+        exon6_phenotypes = os.path.join(exon6_dir, "ABOPhenotype.txt")
+        exon7_phenotypes = os.path.join(exon7_dir, "ABOPhenotype.txt")
+        exon6_polymorphisms = os.path.join(exon6_dir, "ABOReadPolymorphisms.txt")
+        exon7_polymorphisms = os.path.join(exon7_dir, "ABOReadPolymorphisms.txt")
 
         # Check if both exon6 and exon7 ABOPhenotype.txt files exist
-        if not (os.path.exists(exon6_file) and os.path.exists(exon7_file)):
+        if not (os.path.exists(exon6_phenotypes) and os.path.exists(exon7_phenotypes)):
             print(
-                f"Skipping file {filename}. Missing ABOPhenotype.txt file in exon6 or exon7."
+                f"Skipping file {filename}. Missing ABOPhenotype.txt file for exon6 or exon7."
+            )
+            return
+        if (
+            os.path.getsize(exon6_polymorphisms) == 0
+            or os.path.getsize(exon7_polymorphisms) == 0
+        ):
+            print(
+                f"Skipping file {filename}. Expected polymorphisms not present in alignment file."
             )
             return
 
@@ -541,13 +555,13 @@ class ABOReportParser:
         sample_df = pd.DataFrame({"Barcode": [barcode], "Sequencing_ID": [sample_name]})
 
         try:
-            df_exon6 = self.parse_exon6(exon6_file)
+            df_exon6 = self.parse_exon6(exon6_phenotypes)
         except Exception as e:
             print(f"Error processing exon6 for file {filename}: {str(e)}")
             df_exon6 = None
 
         try:
-            df_exon7 = self.parse_exon7(exon7_file)
+            df_exon7 = self.parse_exon7(exon7_phenotypes)
         except Exception as e:
             print(f"Error processing exon7 for file {filename}: {str(e)}")
             df_exon7 = None
@@ -578,23 +592,6 @@ class ABOReportParser:
             merged_df.columns = self.columns
             merged_df = self.assign_phenotype_genotype(merged_df)
             self.results.append(merged_df)
-
-    # def process_files(self):
-    #     for filename in os.listdir(self.input_dir):
-    #         if os.path.isdir(os.path.join(self.input_dir, filename)):
-    #             # match = re.match(r"^IMM-[0-9]+-[0-9]+_barcode\d+", filename)
-    #             match = re.match(
-    #                 r"^(IMM|INGS|NGS)(-[0-9]+-[0-9]+)?_barcode\d+", filename
-    #             )
-    #             if match:
-    #                 print("Processing file: " + filename)
-    #                 # Extract barcode and sample_name from the filename
-    #                 sample_name, barcode = filename.split("_")
-    #                 self.process_file(filename)
-    #                 print(
-    #                     "Done adding Sample %s with barcode %s to merged data frame"
-    #                     % (sample_name, barcode)
-    #                 )
 
     # Module updated to capture the full spectrum of filenames possible from ONT setups
     def process_files(self):
@@ -630,7 +627,7 @@ class ABOReportParser:
                                 )
                             else:
                                 print(
-                                    f"\Barcode format incorrect in filename: {filename}"
+                                    f"\nBarcode format incorrect in filename: {filename}"
                                 )
                         else:
                             print(
@@ -741,40 +738,6 @@ class ABOReportParser:
         writer.close()
 
         ## Creating Final Export file
-
-        # self.df_for_lis_soft = pd.DataFrame()
-        # self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
-        # self.df_for_lis_soft["Shipment Date"] = ""
-
-        # # Only process if "Genotype" column exists and all values are not 'Unknown' or blank
-        # if (
-        #     "Genotype" in final_df.columns
-        #     and not final_df["Genotype"].isnull().all()
-        #     and not (final_df["Genotype"] == "Unknown").all()
-        # ):
-        #     valid_genotype_mask = (final_df["Genotype"] != "Unknown") & final_df[
-        #         "Genotype"
-        #     ].notnull()
-        #     self.df_for_lis_soft.loc[valid_genotype_mask, "ABO Geno Type1"] = (
-        #         final_df.loc[valid_genotype_mask, "Genotype"].str[0]
-        #     )
-        #     self.df_for_lis_soft.loc[valid_genotype_mask, "ABO Geno Type2"] = (
-        #         final_df.loc[valid_genotype_mask, "Genotype"].str[1]
-        #     )
-
-        # else:
-        #     self.df_for_lis_soft["ABO Geno Type1"] = ""
-        #     self.df_for_lis_soft["ABO Geno Type2"] = ""
-
-        # self.df_for_lis_soft["ABO Pheno Type"] = final_df["Phenotype"]
-        # self.df_for_lis_soft["RH"] = ""
-        # self.df_for_lis_soft["Blood Type"] = final_df["Phenotype"]
-        # self.df_for_lis_soft["ABORH Comments"] = ""
-        # self.df_for_lis_soft.drop_duplicates(inplace=True)
-        # self.df_for_lis_soft.to_csv("./final_export.csv", index=False, encoding="utf-8")
-
-        ## -------------------- Modified to add Average # of Reads to final export
-
         # Initialize df_for_lis_soft DataFrame
         self.df_for_lis_soft = pd.DataFrame()
         self.df_for_lis_soft["Sample ID"] = final_df["Sequencing_ID"]
@@ -825,7 +788,7 @@ class ABOReportParser:
         """
         self.process_files()
         final_df = self.merge_dataframes()
-        print("Final Results:")
+        print("\n\nFinal Results:")
         print("-" * 336)
         print(final_df.to_string(index=False))
         print("-" * 336)
@@ -840,6 +803,6 @@ if __name__ == "__main__":
     input_directory = sys.argv[1]
     parser = ABOReportParser(input_directory)
     parser.run()
-    print("""All done!\n""")
+    print("All done!\n")
 
 sys.exit(0)

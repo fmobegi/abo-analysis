@@ -40,20 +40,54 @@ process process_exon6 {
         path(database)
 
     output:
-        path '*'
-        path '*.txt', emit: txt
+        path 'exon6*'
+        path '*.log.txt', emit: txt
     
     when:
         task.ext.when == null || task.ext.when
- 
+
     script:
         """
-        python3 $projectDir/bin/AnalyzeAbo_Main.py \\
-            --reference="${reference}" \\
-            --alleles="${database}" \\
-            --output="exon6" \\
-            --analysis-type="READS" \\
-            --reads="${readsForMapping}" 2>&1 | tee  ${name}_exon6.log.txt
+        python3 -c '
+        import sys
+        import traceback
+        import subprocess
+        import shutil
+        import os
+
+        def run_analysis():
+            #This step necesary to ensure all samples are processed even after an error occurs
+            tmp_dir = "tmp_dir"
+            os.makedirs(tmp_dir, exist_ok=True)
+
+            try:
+                # Run the analysis script, output to tmp_dir
+                subprocess.check_call([
+                    "python3", "$projectDir/bin/AnalyzeAbo_Main.py",
+                    "--reference=${reference}",
+                    "--alleles=${database}",
+                    "--output=" + tmp_dir, 
+                    "--analysis-type=READS",
+                    "--reads=${readsForMapping}"
+                ])
+            except subprocess.CalledProcessError as e:
+                # Capture and print any error message(s)
+                with open(f"{tmp_dir}/error.log", "w") as err_log:
+                    err_log.write(f"An error occurred: {e}\\n")
+                    traceback.print_exc(file=err_log)
+
+                print(f"An error occurred: {e}", file=sys.stderr)
+                traceback.print_exc()
+            finally:
+                # Finally, move everything from tmp_dir to exon6
+                if os.path.exists("exon6"):
+                    shutil.rmtree("exon6") 
+
+                shutil.move(tmp_dir, "exon6")
+
+        if __name__ == "__main__":
+            run_analysis()
+        ' 2>&1 | tee ${name}_exon6.log.txt
         """
 }
 
@@ -66,27 +100,61 @@ process process_exon7 {
     publishDir "${params.outdir}/${name.toString()}", mode: 'copy'
     errorStrategy 'ignore'
     cache true
- 
+
     input:
         tuple val(name), path(readsForMapping)
         path(reference)
         path(database)
 
     output:
-        path '*'
-        path '*.txt', emit: txt
-    
+        path 'exon7*'
+        path '*.log.txt', emit: txt
+
     when:
         task.ext.when == null || task.ext.when
 
     script:
         """
-        python3 $projectDir/bin/AnalyzeAbo_Main.py \\
-            --reference="${reference}" \\
-            --alleles="${database}" \\
-            --output="exon7" \\
-            --analysis-type="READS" \\
-            --reads="${readsForMapping}" 2>&1 | tee ${name}_exon7.log.txt
+        python3 -c '
+        import sys
+        import traceback
+        import subprocess
+        import shutil
+        import os
+
+        def run_analysis():
+            #This step necesary to ensure all samples are processed even after an error occurs
+            tmp_dir = "tmp_dir"  
+            os.makedirs(tmp_dir, exist_ok=True)
+
+            try:
+                # Run the analysis script, output to tmp_dir
+                subprocess.check_call([
+                    "python3", "$projectDir/bin/AnalyzeAbo_Main.py",
+                    "--reference=${reference}",
+                    "--alleles=${database}",
+                    "--output=" + tmp_dir, 
+                    "--analysis-type=READS",
+                    "--reads=${readsForMapping}"
+                ])
+            except subprocess.CalledProcessError as e:
+                # Capture and print any error message
+                with open(f"{tmp_dir}/error.log", "w") as err_log:
+                    err_log.write(f"An error occurred: {e}\\n")
+                    traceback.print_exc(file=err_log)
+
+                print(f"An error occurred: {e}", file=sys.stderr)
+                traceback.print_exc()
+            finally:
+                # Finally, move everything from tmp_dir to exon7
+                if os.path.exists("exon7"):
+                    shutil.rmtree("exon7")  
+
+                shutil.move(tmp_dir, "exon7") 
+
+        if __name__ == "__main__":
+            run_analysis()
+        ' 2>&1 | tee ${name}_exon7.log.txt
         """
 }
 
@@ -112,7 +180,7 @@ process compile_results{
         python3 $projectDir/bin/Aggregate_ABO_reports.py \\
             $snp_position_files 2>&1 | tee  ABO_results.log
 
-        grep -E "Skipping|does not|Error" ABO_results.log > failed_samples.txt
+        grep -E "Skipping|does not|Error" ABO_results.log | grep -v report > failed_samples.txt
         
         """
 }
