@@ -27,7 +27,8 @@ __status__ = "Development"
 
 
 import os
-#from Bio.Seq import Seq
+
+# from Bio.Seq import Seq
 from Bio import SeqIO
 from os.path import split
 
@@ -37,14 +38,14 @@ def createOutputFile(outputfileName):
     tempDir, tempFilename = split(outputfileName)
     if not os.path.isdir(tempDir):
         os.makedirs(tempDir)
-    resultsOutput = open(outputfileName, 'w')
+    resultsOutput = open(outputfileName, "w")
     return resultsOutput
 
 
 def loadInputRecords(recordFileName):
-    if (".fasta" == recordFileName[-6:] or ".fa" == recordFileName[-3:]):
+    if ".fasta" == recordFileName[-6:] or ".fa" == recordFileName[-3:]:
         FileOutputFormat = "fasta"
-    elif (".fastq" == recordFileName[-6:] or ".fq" == recordFileName[-3:]):
+    elif ".fastq" == recordFileName[-6:] or ".fq" == recordFileName[-3:]:
         FileOutputFormat = "fastq"
     else:
         FileOutputFormat = "UnknownFormat"

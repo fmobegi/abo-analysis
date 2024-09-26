@@ -31,6 +31,7 @@ __status__ = "Development"
 # I want to cluster these polymorphisms by Blood Group.
 # This means I can compare the expected polymorphisms, between A, B, and O alleles.
 
+
 class BloodGroupStats:
 
     def __init__(self, referenceSequence):
@@ -47,17 +48,19 @@ class BloodGroupStats:
             self.oStats.append(BloodGroupColumn(referenceBase))
 
     def getStatsForPhenotype(self, phenotype):
-        if(phenotype == 'A'):
+        if phenotype == "A":
             return self.aStats
-        elif(phenotype == 'B'):
+        elif phenotype == "B":
             return self.bStats
-        elif(phenotype == 'O'):
+        elif phenotype == "O":
             return self.oStats
         else:
-            raise Exception('Unknown phenotype:' + str(phenotype))
+            raise Exception("Unknown phenotype:" + str(phenotype))
 
     def getNucleotidePercentage(self, phenotype, nucleotide, position):
-        return self.getStatsForPhenotype(phenotype)[position].getNucleotidePercentage(nucleotide)
+        return self.getStatsForPhenotype(phenotype)[position].getNucleotidePercentage(
+            nucleotide
+        )
 
     def getMostCommonBase(self, phenotype, position):
         return self.getStatsForPhenotype(phenotype)[position].getMostCommonBase()
@@ -86,7 +89,8 @@ class BloodGroupStats:
     def processInsertion(self, phenotype, position, newBases):
         self.getStatsForPhenotype(phenotype)[position].mismatchBase(newBases)
 
-        #print('I handled the insertion at position:' + str(position))
+        # print('I handled the insertion at position:' + str(position))
+
 
 # This class represents a single column in an alignment, specific to a blood group.
 
@@ -110,61 +114,69 @@ class BloodGroupColumn:
 
     def getNucleotidePercentage(self, nucleotide):
         # I will try adding the delete count in here as well. The deletes aren't stored in the nucleotide counts
-        #totalNucleotideCount = self.aCount + self.gCount + self.cCount + self.tCount
-        totalNucleotideCount = self.aCount + self.gCount + \
-            self.cCount + self.tCount + self.delCount
+        # totalNucleotideCount = self.aCount + self.gCount + self.cCount + self.tCount
+        totalNucleotideCount = (
+            self.aCount + self.gCount + self.cCount + self.tCount + self.delCount
+        )
 
-        if(totalNucleotideCount == 0):
+        if totalNucleotideCount == 0:
             print(
-                'I am returning a value of -1 because apparently all my nuclotide positions are equal to zero.')
-            #raise Exception('what is going on here?')
+                "I am returning a value of -1 because apparently all my nuclotide positions are equal to zero."
+            )
+            # raise Exception('what is going on here?')
             return -1
         else:
 
             # TODO: I'm not sure if these calculations are correct.
             # The way I store Insertions and Deletions is kind of confusing for this data.
 
-            if(nucleotide == 'A'):
-                return ((100.0 * self.aCount)/totalNucleotideCount)
-            elif(nucleotide == 'G'):
-                return ((100.0 * self.gCount)/totalNucleotideCount)
-            elif(nucleotide == 'C'):
-                return ((100.0 * self.cCount)/totalNucleotideCount)
-            elif(nucleotide == 'T'):
-                return ((100.0 * self.tCount)/totalNucleotideCount)
+            if nucleotide == "A":
+                return (100.0 * self.aCount) / totalNucleotideCount
+            elif nucleotide == "G":
+                return (100.0 * self.gCount) / totalNucleotideCount
+            elif nucleotide == "C":
+                return (100.0 * self.cCount) / totalNucleotideCount
+            elif nucleotide == "T":
+                return (100.0 * self.tCount) / totalNucleotideCount
             else:
                 raise Exception(
-                    'I do not know what this nucleotide is:' + str(nucleotide))
+                    "I do not know what this nucleotide is:" + str(nucleotide)
+                )
 
     def getMostCommonBase(self):
         maxPolymorphismTypeCount = max(
-            (self.matchCount, self.mismatchCount, self.inCount, self.delCount))
+            (self.matchCount, self.mismatchCount, self.inCount, self.delCount)
+        )
         maxNucleotideTypeCount = max(
-            (self.aCount, self.gCount, self.cCount, self.tCount))
+            (self.aCount, self.gCount, self.cCount, self.tCount)
+        )
 
-        if(maxPolymorphismTypeCount == self.matchCount):
+        if maxPolymorphismTypeCount == self.matchCount:
             return self.referenceBase
-        elif(maxPolymorphismTypeCount == self.delCount):
-            return '-'
-        elif(maxPolymorphismTypeCount == self.inCount
-             or
-             maxPolymorphismTypeCount == self.mismatchCount):
+        elif maxPolymorphismTypeCount == self.delCount:
+            return "-"
+        elif (
+            maxPolymorphismTypeCount == self.inCount
+            or maxPolymorphismTypeCount == self.mismatchCount
+        ):
 
-            if(maxNucleotideTypeCount == self.aCount):
-                return 'A'
-            elif(maxNucleotideTypeCount == self.gCount):
-                return 'G'
-            elif(maxNucleotideTypeCount == self.cCount):
-                return 'C'
-            elif(maxNucleotideTypeCount == self.tCount):
-                return 'T'
+            if maxNucleotideTypeCount == self.aCount:
+                return "A"
+            elif maxNucleotideTypeCount == self.gCount:
+                return "G"
+            elif maxNucleotideTypeCount == self.cCount:
+                return "C"
+            elif maxNucleotideTypeCount == self.tCount:
+                return "T"
             else:
                 raise Exception(
-                    'I do not know what to do with this max value, something is wrong.')
+                    "I do not know what to do with this max value, something is wrong."
+                )
 
         else:
             raise Exception(
-                'I do not know what to do with this max value, something is wrong.')
+                "I do not know what to do with this max value, something is wrong."
+            )
 
     # Actually kind of hard to calculate a total.
     # I think the nucleotide counts + deletion counts should do it.
@@ -191,7 +203,7 @@ class BloodGroupColumn:
         try:
             mapped_count = self.getMappedReadCount()
             if mapped_count > 0:
-                return ((100.0 * self.matchCount) / mapped_count)
+                return (100.0 * self.matchCount) / mapped_count
             else:
                 return 0.0  # Or any other appropriate value when count is zero
         except ZeroDivisionError:
@@ -201,7 +213,7 @@ class BloodGroupColumn:
         try:
             mapped_count = self.getMappedReadCount()
             if mapped_count > 0:
-                return ((100.0 * self.mismatchCount) / mapped_count)
+                return (100.0 * self.mismatchCount) / mapped_count
             else:
                 return 0.0
         except ZeroDivisionError:
@@ -211,7 +223,7 @@ class BloodGroupColumn:
         try:
             mapped_count = self.getMappedReadCount()
             if mapped_count > 0:
-                return ((100.0 * self.inCount) / mapped_count)
+                return (100.0 * self.inCount) / mapped_count
             else:
                 return 0.0
         except ZeroDivisionError:
@@ -221,27 +233,26 @@ class BloodGroupColumn:
         try:
             mapped_count = self.getMappedReadCount()
             if mapped_count > 0:
-                return ((100.0 * self.delCount) / mapped_count)
+                return (100.0 * self.delCount) / mapped_count
             else:
                 return 0.0
         except ZeroDivisionError:
             return 0.0
 
-
     def deleteBase(self):
         self.delCount += 1
 
     def addNewBase(self, newBases):
-        if (newBases == 'A'):
+        if newBases == "A":
             self.aCount += 1
-        elif (newBases == 'G'):
+        elif newBases == "G":
             self.gCount += 1
-        elif (newBases == 'C'):
+        elif newBases == "C":
             self.cCount += 1
-        elif (newBases == 'T'):
+        elif newBases == "T":
             self.tCount += 1
         else:
-            raise Exception('Unknown nucleotide base:' + newBases)
+            raise Exception("Unknown nucleotide base:" + newBases)
 
     def matchBase(self, newBases):
         self.matchCount += 1

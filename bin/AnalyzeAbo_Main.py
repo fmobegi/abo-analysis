@@ -29,13 +29,16 @@ from AnalyzeAbo import *
 import getopt
 import sys
 import os
+
 SoftwareVersion = "abo-analysis Version 1.0"
 
 
 def usage():
-    print("usage:\n" +
-          "\tThis script is written for python 3.11\n" +
-          "\tI haven't written the usage tutorial yet.  Oops.  Do this now please.")
+    print(
+        "usage:\n"
+        + "\tThis script is written for python 3.11\n"
+        + "\tI haven't written the usage tutorial yet.  Oops.  Do this now please."
+    )
 
 
 # Read Commandline Arguments.  Return true if everything looks okay for read extraction.
@@ -48,42 +51,58 @@ def readArgs():
     global referenceFileName
     global readsFileName
     global allelesFileName
-    #global allelesAFileName
-    #global allelesBFileName
-    #global allelesOFileName
+    # global allelesAFileName
+    # global allelesBFileName
+    # global allelesOFileName
     global outputDirectoryName
     global analysisType
 
     referenceFileName = None
     readsFileName = None
     allelesFileName = None
-    #allelesAFileName        = None
-    #allelesBFileName        = None
-    #allelesOFileName        = None
+    # allelesAFileName        = None
+    # allelesBFileName        = None
+    # allelesOFileName        = None
     outputDirectoryName = None
     analysisType = None
 
-    if(len(sys.argv) < 3):
-        print('I don\'t think you have enough arguments.\n')
+    if len(sys.argv) < 3:
+        print("I don't think you have enough arguments.\n")
         usage()
-        raise()
+        raise ()
         return False
 
     # getopt.getopt(..) is a function for parsing args the way smart people do it
     # For More info, use google or
     # https://www.tutorialspoint.com/python/python_command_line_arguments.htm
     try:
-        opts, args = getopt.getopt(sys.argv[1:]                                   # TODO Fix this, i don't accept abo alleles anymore
-                                   , "hvr:R:a:o:A:B:O:t:e6:e7:", ["help", "version", "reference=", "reads=", "alleles=", "output=", "alleles-a=", "alleles-b=", "alleles-o=", "analysis-type=", "exon-6=", "exon-7"])
+        opts, args = getopt.getopt(
+            sys.argv[1:],  # TODO Fix this, i don't accept abo alleles anymore
+            "hvr:R:a:o:A:B:O:t:e6:e7:",
+            [
+                "help",
+                "version",
+                "reference=",
+                "reads=",
+                "alleles=",
+                "output=",
+                "alleles-a=",
+                "alleles-b=",
+                "alleles-o=",
+                "analysis-type=",
+                "exon-6=",
+                "exon-7",
+            ],
+        )
 
         for opt, arg in opts:
 
-            if opt in ('-h', '--help'):
+            if opt in ("-h", "--help"):
                 print(SoftwareVersion)
                 usage()
                 return False
 
-            elif opt in ('-v', '--version'):
+            elif opt in ("-v", "--version"):
                 print(SoftwareVersion)
                 return False
 
@@ -100,7 +119,7 @@ def readArgs():
                 outputDirectoryName = arg
 
             elif opt in ("e6", "--exon-6"):
-                print('YOU GAVE ME EXON 6:' + arg)
+                print("YOU GAVE ME EXON 6:" + arg)
 
             # elif opt in ("-A", "--alleles-a"):
             #    allelesAFileName = arg
@@ -115,37 +134,37 @@ def readArgs():
                 analysisType = arg
 
             else:
-                print('Unknown commandline option: ' + opt)
-                raise()
+                print("Unknown commandline option: " + opt)
+                raise ()
 
     except getopt.GetoptError as errorMessage:
-        print('Something seems wrong with your commandline parameters.')
+        print("Something seems wrong with your commandline parameters.")
         print(errorMessage)
         usage()
         return False
 
-    print('Reference File:' + str(referenceFileName))
-    print('Reads File:' + str(readsFileName))
-    print('Alleles File:' + str(allelesFileName))
-    print('Output Directory:' + str(outputDirectoryName))
+    print("Reference File:" + str(referenceFileName))
+    print("Reads File:" + str(readsFileName))
+    print("Alleles File:" + str(allelesFileName))
+    print("Output Directory:" + str(outputDirectoryName))
 
     # Quick sanity check.
-    if(len(referenceFileName) < 4):
-        print('referenceFileName is too short:' + str(referenceFileName))
+    if len(referenceFileName) < 4:
+        print("referenceFileName is too short:" + str(referenceFileName))
         return False
     # TODO: I don't feel like writing sanity checks rignt now.
 
     # If we're doing allele analysis we need:
-        # fasta with alleles
-        # exon 6 and7 referencx
+    # fasta with alleles
+    # exon 6 and7 referencx
     # If read analysis
-        # need ex 6 and 7.
+    # need ex 6 and 7.
 
     # if(len(allelesFileName) < 4):
     #    print('allelesFileName is too short:' + str(allelesFileName))
     #    return False
-    if(len(outputDirectoryName) < 4):
-        print('Output directory is too short:' + str(outputDirectoryName))
+    if len(outputDirectoryName) < 4:
+        print("Output directory is too short:" + str(outputDirectoryName))
         return False
 
     if not os.path.isdir(outputDirectoryName):
@@ -154,37 +173,41 @@ def readArgs():
     return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     try:
-        if(readArgs()):
+        if readArgs():
 
-            print('Starting to Analyze ABO')
+            print("Starting to Analyze ABO")
 
-            if(analysisType == "READS"):
+            if analysisType == "READS":
 
                 findPolymorphismsInReads(
-                    referenceFileName, readsFileName, outputDirectoryName)
+                    referenceFileName, readsFileName, outputDirectoryName
+                )
 
-            elif(analysisType == "ALLELES"):
-                #compareIndividualABOAllelesToReference(referenceFileName, allelesFileName, outputDirectoryName)
+            elif analysisType == "ALLELES":
+                # compareIndividualABOAllelesToReference(referenceFileName, allelesFileName, outputDirectoryName)
                 batchABOAllelesAgainstReference(
-                    referenceFileName, allelesFileName, outputDirectoryName)
-            #findPolymorphismsInReads(referenceFileName, readsFileName, outputDirectoryName)
+                    referenceFileName, allelesFileName, outputDirectoryName
+                )
+            # findPolymorphismsInReads(referenceFileName, readsFileName, outputDirectoryName)
 
             else:
                 print(
-                    'Please provide an analysis type. Use the "-t" or "--analysis-type" with a type of "READS" or "ALLELES" ')
-                print('I give up.')
+                    'Please provide an analysis type. Use the "-t" or "--analysis-type" with a type of "READS" or "ALLELES" '
+                )
+                print("I give up.")
 
-            print('Done analyzing ABO.')
+            print("Done analyzing ABO.")
         else:
             print(
-                '\nI\'m giving up because I was not satisfied with your commandline arguments.')
+                "\nI'm giving up because I was not satisfied with your commandline arguments."
+            )
 
     except Exception:
         # Top Level exception handling like a pro.
         # This is not really doing anything.
-        print('Fatal problem during read extraction:')
+        print("Fatal problem during read extraction:")
         print(sys.exc_info())
-        raise()
+        raise ()

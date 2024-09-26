@@ -22,6 +22,7 @@ import os
 import argparse
 import shutil
 
+
 def generate_config(directory):
     """
     Generate MultiQC samples mapping and copy files.
@@ -32,35 +33,49 @@ def generate_config(directory):
     file_mapping = {}
     for root, _, files in os.walk(directory):
         for file in files:
-            if file.startswith('alignment.samtools.') and (file.endswith('.stats') or file.endswith('.flagstat')):
+            if file.startswith("alignment.samtools.") and (
+                file.endswith(".stats") or file.endswith(".flagstat")
+            ):
                 filepath = os.path.join(root, file)
-                parts = filepath.split('/')
+                parts = filepath.split("/")
                 barcode_part = None
                 exon_part = None
                 for part in parts:
-                    if '_barcode' in part:
+                    if "_barcode" in part:
                         barcode_part = part
-                    if 'exon' in part:
+                    if "exon" in part:
                         exon_part = part
                 if barcode_part and exon_part:
                     sample_name = f"{barcode_part}_{exon_part}.{file.split('.')[1]}"
                     file_mapping[filepath] = sample_name
-                    new_filename = os.path.basename(filepath).replace('alignment.samtools.',
-                                                                      f'{sample_name}.')
-                    print("\033[1;32mCopying\033[0m", filepath, "\033[1;32minto\033[0m", new_filename)
+                    new_filename = os.path.basename(filepath).replace(
+                        "alignment.samtools.", f"{sample_name}."
+                    )
+                    print(
+                        "\033[1;32mCopying\033[0m",
+                        filepath,
+                        "\033[1;32minto\033[0m",
+                        new_filename,
+                    )
                     shutil.copy(filepath, os.path.join(os.getcwd(), new_filename))
-                    
-    with open('samtools_files_mapping.yaml', 'w', encoding="utf-8") as file:
+
+    with open("samtools_files_mapping.yaml", "w", encoding="utf-8") as file:
         for filepath, sample_name in file_mapping.items():
             file.write(f"  {filepath}: {sample_name}\n")
 
+
 def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description='Generate MultiQC samples mapping and copy files.')
-    parser.add_argument('directory', help='Directory containing the files for MultiQC mapping')
+    parser = argparse.ArgumentParser(
+        description="Generate MultiQC samples mapping and copy files."
+    )
+    parser.add_argument(
+        "directory", help="Directory containing the files for MultiQC mapping"
+    )
     args = parser.parse_args()
     generate_config(args.directory)
     print("Done renaming the SAMtools metrics files")
+
 
 if __name__ == "__main__":
     main()
