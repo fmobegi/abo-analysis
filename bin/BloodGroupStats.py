@@ -121,7 +121,7 @@ class BloodGroupColumn:
 
         if totalNucleotideCount == 0:
             print(
-                "I am returning a value of -1 because apparently all my nuclotide positions are equal to zero."
+                "I am returning a value of -1 because apparently all my nucleotide positions are equal to zero."
             )
             # raise Exception('what is going on here?')
             return -1
