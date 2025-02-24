@@ -600,9 +600,7 @@ class ABOReportParser:
                 try:
                     # Updated regex pattern
                     # pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+-[0-9]+)?_barcode\d+$"
-                    pattern = (
-                        r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
-                    )
+                    pattern = r"^(IMM|INGS|NGS|[A-Z0-9]+)(-[A-Z0-9]+)?(-[A-Z0-9]+)?_barcode\d+$"
                     match = re.match(pattern, filename)
 
                     if match:
