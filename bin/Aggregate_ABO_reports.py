@@ -533,8 +533,8 @@ class ABOReportParser:
 
         exon6_phenotypes = os.path.join(exon6_dir, "ABOPhenotype.txt")
         exon7_phenotypes = os.path.join(exon7_dir, "ABOPhenotype.txt")
-        exon6_polymorphisms = os.path.join(exon6_dir, "ABOReadPolymorphisms.txt")
-        exon7_polymorphisms = os.path.join(exon7_dir, "ABOReadPolymorphisms.txt")
+        # exon6_polymorphisms = os.path.join(exon6_dir, "ABOReadPolymorphisms.txt")
+        # exon7_polymorphisms = os.path.join(exon7_dir, "ABOReadPolymorphisms.txt")
 
         # Check if both exon6 and exon7 ABOPhenotype.txt files exist
         if not (os.path.exists(exon6_phenotypes) and os.path.exists(exon7_phenotypes)):
@@ -542,14 +542,14 @@ class ABOReportParser:
                 f"Skipping file {filename}. Missing ABOPhenotype.txt file for exon6 or exon7."
             )
             return
-        if (
-            os.path.getsize(exon6_polymorphisms) == 0
-            or os.path.getsize(exon7_polymorphisms) == 0
-        ):
-            print(
-                f"Skipping file {filename}. Expected polymorphisms not present in alignment file."
-            )
-            return
+        # if (
+        #     os.path.getsize(exon6_polymorphisms) == 0
+        #     or os.path.getsize(exon7_polymorphisms) == 0
+        # ):
+        #     print(
+        #         f"Skipping file {filename}. Expected polymorphisms not present in alignment file."
+        #     )
+        #     return
 
         # Define sample_df at the beginning of the method
         sample_df = pd.DataFrame({"Barcode": [barcode], "Sequencing_ID": [sample_name]})
